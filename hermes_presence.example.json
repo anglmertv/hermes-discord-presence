@@ -1,0 +1,10 @@
+{
+  "_help": "Copy this file to hermes_presence.json and fill in your Discord Application ID. All keys are optional. %VAR% expands from environment (e.g. %LOCALAPPDATA%). status_template fields: {action} {model} {msgs} {tokens} {cost}. Priority: env > config.json > built-in defaults.",
+  "hermes_path": "%LOCALAPPDATA%\hermes",
+  "state_db": "",
+  "agent_log": "",
+  "discord_app_id": "",
+  "status_template": "{action} \u2022 {tokens} tok \u2022 ${cost}",
+  "poll_interval": 5,
+  "stale_after": 900
+}

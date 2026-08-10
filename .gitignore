@@ -1,0 +1,16 @@
+# logs and artifacts
+*.log
+__pycache__/
+*.pyc
+
+# local env
+.env
+.venv/
+
+# editor cruft
+.vscode/
+.idea/
+.DS_Store
+
+# локальный конфиг с app_id — не коммитить
+hermes_presence.json

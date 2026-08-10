@@ -1,0 +1,5 @@
+# Optional: system tray icon (pause/resume/quit, colored status dot).
+# Without these the app still works, just has no tray.
+# Install with: pip install -r requirements-tray.txt
+pystray>=0.19.0
+Pillow>=9.0.0

@@ -152,6 +152,7 @@ TOOL_FRESH_SEC = 60          # последний инструмент счит�
 CHAT_FRESH_SEC = 600         # свежесть сообщения до "Idle"
 _LOG_TAIL = 200 * 1024       # хвост agent.log для парсинга
 _LOG_DEBOUNCE = 30           # не спамить лог одной ошибкой чаще 30 сек
+LOG_MAX_BYTES = 512 * 1024   # ротация лога: больше -> в .old (перезапись)
 
 # Красивые имена частых инструментов
 TOOL_FORMAT = {
@@ -164,9 +165,19 @@ TOOL_FORMAT = {
 }
 
 
+def _maybe_rotate_log() -> None:
+    """Простая ротация: если лог превысил LOG_MAX_BYTES — сдвинуть в .old."""
+    try:
+        if os.path.getsize(LOG_FILE) > LOG_MAX_BYTES:
+            os.replace(LOG_FILE, LOG_FILE + ".old")  # перезапишет старый .old
+    except OSError:
+        pass
+
+
 def log(msg: str) -> None:
     """Пишет timestamped строку в лог (для молчаливого pythonw)."""
     try:
+        _maybe_rotate_log()
         with open(LOG_FILE, "a", encoding="utf-8") as fh:
             fh.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {msg}\n")
     except OSError:
@@ -191,11 +202,19 @@ def acquire_mutex():
 # --------------------------------------------------------------------------
 # Окно Hermes (WinAPI EnumWindows, без subprocess)
 # --------------------------------------------------------------------------
-user32 = ctypes.windll.user32
-WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+# Импорт безопасен и на не-Windows (для pytest на CI): без WinAPI функции
+# просто вернут False.
+try:
+    user32 = ctypes.windll.user32
+    WNDENUMPROC = ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+except (AttributeError, OSError):
+    user32 = None
+    WNDENUMPROC = None
 
 
 def hermes_window_visible() -> bool:
+    if user32 is None:
+        return False  # не-Windows (тесты/CI)
     found = []
 
     def cb(hwnd, lparam):

@@ -26,7 +26,7 @@ The activity appears only **while the Hermes window is open** and disappears ~ w
 | What | Example | Source |
 |------|---------|--------|
 | **Model** | `deepseek/deepseek-v4-flash-0731` — the model actually serving you | parsed live from Hermes' agent log |
-| **Action** | `Running: python` / `Chatting with Hermes` / `Idle in Hermes` | your latest tool call or message |
+| **Action** | `Running: python` / `Chatting with Hermes` / `Idle in Hermes` / `stale` | your latest tool call or message; `stale` = no updates for `stale_after` seconds |
 | **Stats** | `264 msgs • 3.4M tok • $0.58` | your session counters from Hermes' database |
 | **Timer** | how long you've been in the session | session start time |
 
@@ -103,14 +103,20 @@ Open `hermes_presence.json` (the copy you just made) and edit **at least** `disc
 ### 5. Install and run
 
 ```bash
-# from the project folder:
+# from the project folder — base requirements (no tray needed to run):
 pip install -r requirements.txt
+
+# optional — tray icon (pause/resume/quit, status dot):
+pip install -r requirements-tray.txt
 
 # then start it:
 python hermes_presence.py
 ```
 
-On first run it creates the tray icon. That's it.
+On first run it creates the tray icon (if `pystray`/`Pillow` are installed; without them the app still works). That's it.
+
+> **Test without Discord:** `python hermes_presence.py --dry-run` prints exactly
+> what would be sent to Discord — no connection, no tray icon.
 
 ---
 
@@ -190,7 +196,7 @@ Config is read at startup. Restart the app (`Quit` from the tray, then run it ag
 |---------|-----|
 | `pypresence is not installed` | `pip install -r requirements.txt` with the **same** interpreter you run the script with |
 | Console window flashes every few seconds | You used `python.exe`; switch to `pythonw.exe` (this script never spawns subprocesses, so it's silent on its own) |
-| No tray icon | Make sure `pystray` and `Pillow` are installed; the app works without the tray too |
+| No tray icon | Install the optional deps: `pip install -r requirements-tray.txt`; the app still works without the tray |
 | Activity shows wrong model | It's read from the agent log; the "stale" suffix means the log hasn't updated recently |
 | Everything looks right but it's still broken | Read `%USERPROFILE%\hermes_presence.log` — every decision and error is logged there |
 
